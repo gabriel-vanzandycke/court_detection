@@ -25,9 +25,6 @@ int main(int argc, char *argv[]){
     // Create court detection module
     CourtDetection courtDetection("ITF");
 
-
-    delete [] buffer;
-
     Blur blur(5);
     std::cout << dummy() << blur.kernel << std::endl;
     return 0;
