@@ -13,10 +13,9 @@ int main(int argc, char *argv[]){
     int nImageSizeX = 1392;
     int nImageSizeY = 550;
 
-    cv::Mat image(nImageSizeY, nImageSizeX, CV_8UC1);
-
     // Load image data
-    FILE *fp = fopen("assets/image.raw", "rb");
+    cv::Mat image = cv::Mat(nImageSizeY, nImageSizeX, CV_8UC1);
+    FILE *fp = fopen("../assets/image.raw", "rb");
     if (fp) {
         std::fread(image.data, nImageSizeX * nImageSizeY, 1, fp);
         fclose(fp);
@@ -24,6 +23,12 @@ int main(int argc, char *argv[]){
 
     // Create court detection module
     CourtDetection courtDetection("ITF");
+
+    // Run court detection with current image
+    cv::Mat output = courtDetection(image);
+
+    cv::imshow("img", output);
+    cv::waitKey();
 
     Blur blur(5);
     std::cout << dummy() << blur.kernel << std::endl;
