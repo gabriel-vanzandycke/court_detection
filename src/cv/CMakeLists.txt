@@ -1,6 +1,6 @@
 project(libcv)
 file(GLOB SOURCES "*.cpp")
-add_library(libcv ${SOURCES})
+add_library(libcv SHARED ${SOURCES})
 
 # link to other libraries
 target_link_libraries(libcv libutils)

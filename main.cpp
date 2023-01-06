@@ -27,9 +27,9 @@ int main(int argc, char *argv[]){
     // Run court detection with current image
     cv::Mat output = courtDetection(image);
 
-    cv::imshow("img", output);
-    cv::waitKey();
+    cv::imshow("img", output); cv::waitKey();
 
+    Blur blur2[4];
     Blur blur(5);
     std::cout << dummy() << blur.kernel << std::endl;
     return 0;
