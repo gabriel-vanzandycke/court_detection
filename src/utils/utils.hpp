@@ -42,8 +42,9 @@ const std::vector<cv::viz::Color> colors = {
 class Calib
 {
     public:
-        Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec);
+        Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec, cv::Size image_size);
         std::vector<cv::Point2f> project(std::vector<cv::Point3f> point3D);
+        cv::Size image_size;
     private:
         cv::Mat cameraMatrix;
         cv::Mat distCoeffs;
@@ -73,3 +74,5 @@ class LineSegment
 void draw_line(LineSegment line, cv::Mat &output, cv::viz::Color color, int thickness=2, int markersize=5, std::string label="");
 
 void draw_line_projected(Calib calib, cv::Point3f p1, cv::Point3f p2, cv::Mat &output, cv::viz::Color color, int thickness, int markersize, std::string label);
+
+void write_line(std::string name, Calib calib, std::vector<cv::Point3f> line, int steps, cv::Mat *debug_image=nullptr);

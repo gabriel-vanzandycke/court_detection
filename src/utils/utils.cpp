@@ -1,12 +1,14 @@
 #include <math.h>
+#include <fstream>
+#include <iostream>
 
 #include <opencv2/calib3d.hpp>
 
 #include "utils.hpp"
 
 
-Calib::Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec):
-    cameraMatrix(cameraMatrix), distCoeffs(distCoeffs), rvec(rvec), tvec(tvec)
+Calib::Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec, cv::Size image_size):
+    cameraMatrix(cameraMatrix), distCoeffs(distCoeffs), rvec(rvec), tvec(tvec), image_size(image_size)
 {
     cv::Mat R, RT;
     cv::Rodrigues(rvec, R);
@@ -83,4 +85,32 @@ void draw_line_projected(Calib calib, cv::Point3f p1, cv::Point3f p2, cv::Mat &o
     std::vector<cv::Point2f> points2D = calib.project(points3D);
     cv::Point2f p12D = points2D[0], p22D = points2D[1];
     draw_line(LineSegment(p12D.x, p12D.y, p22D.x, p22D.y), output, color, thickness, markersize, label);
+}
+
+void write_line(std::string name, Calib calib, std::vector<cv::Point3f> line, int steps, cv::Mat *debug_image)
+{
+    std::ofstream filestream;
+    std::ostringstream filename; filename << name << ".csv";
+    filestream.open(filename.str());
+    filestream << name << std::endl;
+
+    std::vector<cv::Point3f> points3D(steps);
+    std::vector<cv::Point2f> points2D(steps);
+    for (int i = 0; i < steps; i++)
+    {
+        points3D[i] = line[0] + (float)i/steps * (line[1] - line[0]);
+    }
+    points2D = calib.project(points3D);
+    for (cv::Point2f point : points2D)
+    {
+        if (point.x > 0 && point.x < calib.image_size.width && point.y > 0 && point.y < calib.image_size.height)
+        {
+            filestream << point.x << "," << point.y << std::endl;
+            if (debug_image != nullptr)
+            {
+                cv::circle(*debug_image, point, 5, cv::viz::Color::red(), 2);
+            }
+        }
+    }
+    filestream.close();
 }

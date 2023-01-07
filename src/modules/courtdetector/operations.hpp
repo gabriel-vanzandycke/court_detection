@@ -8,7 +8,7 @@ class Skeletonize
 {
     public:
         Skeletonize();
-        cv::Mat operator()(cv::Mat input_image, cv::Mat *debug_image);
+        cv::Mat operator()(cv::Mat input_image, cv::Mat *debug_image=nullptr);
     private:
 };
 
@@ -16,7 +16,7 @@ class RemoveSmallComponents
 {
     public:
         RemoveSmallComponents(int max_area);
-        cv::Mat operator()(cv::Mat input_image, cv::Mat *debug_image);
+        cv::Mat operator()(cv::Mat input_image, cv::Mat *debug_image=nullptr);
     private:
         int max_area;
 };
@@ -29,7 +29,7 @@ class FindSegments
 {
     public:
         FindSegments(float distance_step, float angle_step, int threshold, int min_line_length, int max_line_gap);
-        std::vector<LineSegment> operator()(cv::Mat input_image, cv::Mat *debug_image);
+        std::vector<LineSegment> operator()(cv::Mat input_image, cv::Mat *debug_image=nullptr);
     private:
         float distance_step;
         float angle_step;
@@ -42,7 +42,7 @@ class ClusterSegments
 {
     public:
         ClusterSegments(float rho_threshold, float theta_threshold);
-        std::vector<LineSegment> operator()(std::vector<LineSegment> segments, cv::Mat *debug_image);
+        std::vector<LineSegment> operator()(std::vector<LineSegment> segments, cv::Mat *debug_image=nullptr);
     private:
         float rho_threshold;
         float theta_threshold;
@@ -52,7 +52,7 @@ class IdentifyLines
 {
     public:
         IdentifyLines(int distance_threshold);
-        std::vector<LineSegment> operator()(std::vector<LineSegment> lines, cv::Mat *debug_image);
+        std::vector<LineSegment> operator()(std::vector<LineSegment> lines, cv::Mat *debug_image=nullptr);
     private:
         int distance_threshold;
 };
@@ -61,7 +61,7 @@ class ComputeHomography
 {
     public:
         ComputeHomography(Court court, cv::Size image_size);
-        Calib operator()(std::vector<LineSegment> lines, cv::Mat *debug_image);
+        Calib operator()(std::vector<LineSegment> lines, cv::Mat *debug_image=nullptr);
     private:
         Court court;
         cv::Size image_size;

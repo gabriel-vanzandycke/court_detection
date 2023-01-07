@@ -264,7 +264,7 @@ Calib ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat *deb
     cv::Mat cameraMatrix = cv::Mat::eye(3, 3, CV_64F);
     int flags = cv::CALIB_FIX_ASPECT_RATIO | cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_K1 | cv::CALIB_FIX_K2 | cv::CALIB_FIX_K3;
     cv::calibrateCamera(objectPoints, imagePoints, this->image_size, cameraMatrix, distCoefs, rvec, tvec, flags=flags);
-    Calib calib = {cameraMatrix, distCoefs, rvec[0], tvec[0]};
+    Calib calib = {cameraMatrix, distCoefs, rvec[0], tvec[0], this->image_size};
 
     if (debug_image != nullptr)
     {
