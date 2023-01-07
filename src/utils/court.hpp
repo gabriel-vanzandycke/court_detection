@@ -2,6 +2,14 @@
 
 #include <opencv2/core/mat.hpp>
 
+/**
+ * @brief Representation tennis court variable dimensions
+ * @param length: length of the tennis court
+ * @param width: width of the tennis court
+ * @param serveline_width: width of the service line
+ * @param serveline_offset: offset of the service line from the net
+ * @param linewidth: tennis court lines width
+ */
 typedef struct {
     float length;
     float width;
@@ -18,23 +26,27 @@ Tennis court
         |   |          ◺- centerline
         |   |         |          ◺- right sideline
         |   |         |         |   |
-        +---+---------+---------+---+     <--  Net
+        +---+---------+---------+---+    ◁--  Net
         |   |         |         |   |
         |   |         |         |   |
         |   |         |         |   |
         |   |         |         |   |
         |   |         |         |   |
-        |   A---------E---------B   |    <--  Service line
+        |   A---------E---------B   |    ◁--  Service line
         |   |                   |   |
         |   |                   |   |
         |   |                   |   |
 y-axis  |   |                   |   |
      △  |   |                   |   |
-     |  o---C-------------------D---+    <--  Baseline
+     |  o---C-------------------D---+    ◁--  Baseline
     (0,0)--▷ x-axis
 */
 
-
+/**
+ * @brief Representation of a tennis court
+ * @param rule_type: string representing the tennis court rule type (and its
+ * dimensions). Currently, only ITF is supported.
+ */
 class Court
 {
     public:

@@ -4,6 +4,14 @@
 #include <opencv2/opencv.hpp>
 #include "operations.hpp"
 
+/**
+ * @brief Module responsible to detect tennis court in the given input image
+ * with a series of operations. The operator() returns a Calib object that
+ * correspond to input image calibration.
+ * @param court Court object representing the current tenis cour to detect.
+ * @param image_size Size of the input image
+ * @param debug If true, the module will show intermediate results.
+*/
 class CourtDetector {
     public:
         CourtDetector(Court court, cv::Size image_size, bool debug=false);

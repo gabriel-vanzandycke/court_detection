@@ -11,7 +11,7 @@
 int main(int argc, char *argv[]){
     int nImageSizeX = 1392;
     int nImageSizeY = 550;
-    bool debug = false;
+    bool debug = true;
 
     // Load image data
     cv::Mat image = cv::Mat(nImageSizeY, nImageSizeX, CV_8UC1);
@@ -33,14 +33,14 @@ int main(int argc, char *argv[]){
     cv::Mat *canvas_ptr = debug ? &canvas : nullptr;
     if (debug) {cv::cvtColor(image, canvas, cv::COLOR_GRAY2RGB);}
     int steps = 10;
-    write_line("netline", calib, court.netline(), steps, &canvas);
-    write_line("baseline", calib, court.baseline(), steps, &canvas);
-    write_line("serveline", calib, court.serveline(), steps, &canvas);
-    write_line("centerline", calib, court.centerline(), steps, &canvas);
-    write_line("left_sideline", calib, court.left_sideline(), steps, &canvas);
-    write_line("right_sideline", calib, court.right_sideline(), steps, &canvas);
-    write_line("left_single_sideline", calib, court.left_single_sideline(), steps, &canvas);
-    write_line("right_single_sideline", calib, court.right_single_sideline(), steps, &canvas);
+    write_line("netline.csv", calib, court.netline(), steps, &canvas);
+    write_line("baseline.csv", calib, court.baseline(), steps, &canvas);
+    write_line("serveline.csv", calib, court.serveline(), steps, &canvas);
+    write_line("centerline.csv", calib, court.centerline(), steps, &canvas);
+    write_line("left_sideline.csv", calib, court.left_sideline(), steps, &canvas);
+    write_line("right_sideline.csv", calib, court.right_sideline(), steps, &canvas);
+    write_line("left_single_sideline.csv", calib, court.left_single_sideline(), steps, &canvas);
+    write_line("right_single_sideline.csv", calib, court.right_single_sideline(), steps, &canvas);
     if (debug) {cv::imshow("lines sampled", canvas); cv::waitKey(0);}
 
     return 0;

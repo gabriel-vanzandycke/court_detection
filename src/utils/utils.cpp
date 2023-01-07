@@ -16,6 +16,7 @@ Calib::Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tve
     this->P = cameraMatrix * RT;
 }
 
+
 std::vector<cv::Point2f> Calib::project(std::vector<cv::Point3f> points3D)
 {
     std::vector<cv::Point2f> points2D;
@@ -38,11 +39,13 @@ LineSegment::LineSegment(float x1, float y1, float x2, float y2):
     this->length = sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
 }
 
+
 float LineSegment::distance_to(cv::Point2f point)
 {
     cv::Point2f closest = closest_point(this->rho, this->theta, point);
     return cv::norm(point - closest);
 }
+
 
 cv::Point2f LineSegment::intersect_with(LineSegment line)
 {
@@ -56,10 +59,6 @@ cv::Point2f LineSegment::intersect_with(LineSegment line)
 }
 
 
-/* Find the closest point on a line to a point
-    Line is defined in Hough space by `rho` and `theta`
-    Point is defined by `x` and `y` in carthesian coordinates
-*/
 cv::Point2f closest_point(float rho, float theta, cv::Point2f point)
 {
     cv::Point2f b = {rho*cos(theta), rho*sin(theta)};
@@ -87,11 +86,11 @@ void draw_line_projected(Calib calib, cv::Point3f p1, cv::Point3f p2, cv::Mat &o
     draw_line(LineSegment(p12D.x, p12D.y, p22D.x, p22D.y), output, color, thickness, markersize, label);
 }
 
-void write_line(std::string name, Calib calib, std::vector<cv::Point3f> line, int steps, cv::Mat *debug_image)
+
+void write_line(std::string filename, Calib calib, std::vector<cv::Point3f> line, int steps, cv::Mat *debug_image)
 {
     std::ofstream filestream;
-    std::ostringstream filename; filename << name << ".csv";
-    filestream.open(filename.str());
+    filestream.open(filename);
 
     std::vector<cv::Point3f> points3D(steps);
     std::vector<cv::Point2f> points2D(steps);

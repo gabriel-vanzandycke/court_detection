@@ -238,6 +238,28 @@ ComputeHomography::ComputeHomography(Court court, cv::Size image_size):
 
 Calib ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat *debug_image)
 {
+/*
+Tennis court
+
+        |    ◺- left sideline
+        |   |          ◺- centerline
+        |   |         |          ◺- right sideline
+        |   |         |         |   |
+        +---+---------+---------+---+    ◁--  Net
+        |   |         |         |   |
+        |   |         |         |   |
+        |   |         |         |   |
+        |   |         |         |   |
+        |   |         |         |   |
+        |   A---------E---------B   |    ◁--  Service line
+        |   |                   |   |
+        |   |                   |   |
+        |   |                   |   |
+y-axis  |   |                   |   |
+     △  |   |                   |   |
+     |  o---C-------------------D---+    ◁--  Baseline
+    (0,0)--▷ x-axis
+*/
     cv::Point2f A2D = lines[0].intersect_with(lines[2]); // serveline with left_sideline
     cv::Point2f B2D = lines[0].intersect_with(lines[3]); // serveline with right_sideline
     cv::Point2f C2D = lines[1].intersect_with(lines[2]); // baseline with left_sideline
