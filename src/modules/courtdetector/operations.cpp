@@ -13,11 +13,14 @@
 Skeletonize::Skeletonize()
 {};
 
-cv::Mat Skeletonize::operator()(cv::Mat input_image, cv::Mat &debug_image)
+cv::Mat Skeletonize::operator()(cv::Mat input_image, cv::Mat *debug_image)
 {
     cv::Mat output_image;
     cv::ximgproc::thinning(input_image, output_image);
-    debug_image.setTo(cv::Scalar(255,0,0), output_image);
+    if (debug_image != nullptr)
+    {
+        (*debug_image).setTo(cv::Scalar(255,0,0), output_image);
+    }
     return output_image;
 };
 
@@ -27,7 +30,7 @@ RemoveSmallComponents::RemoveSmallComponents(int max_area):
     max_area(max_area)
 {};
 
-cv::Mat RemoveSmallComponents::operator()(cv::Mat input_image, cv::Mat &debug_image)
+cv::Mat RemoveSmallComponents::operator()(cv::Mat input_image, cv::Mat *debug_image)
 {
     cv::Mat labeled_image, stats, centroids, mask;
     int n_labels = connectedComponentsWithStats(input_image, labeled_image, stats, centroids);
@@ -40,7 +43,10 @@ cv::Mat RemoveSmallComponents::operator()(cv::Mat input_image, cv::Mat &debug_im
             input_image.setTo(0, mask);
         }
     }
-    debug_image.setTo(cv::Scalar(255,0,0), input_image);
+    if (debug_image != nullptr)
+    {
+        (*debug_image).setTo(cv::Scalar(255,0,0), input_image);
+    }
     return input_image;
 };
 
@@ -50,7 +56,7 @@ FindSegments::FindSegments(float distance_step, float angle_step, int threshold,
     distance_step(distance_step), angle_step(angle_step), threshold(threshold), min_line_length(min_line_length), max_line_gap(max_line_gap)
 {};
 
-std::vector<LineSegment> FindSegments::operator()(cv::Mat input_image, cv::Mat &debug_image)
+std::vector<LineSegment> FindSegments::operator()(cv::Mat input_image, cv::Mat *debug_image)
 {
     // find segments
     std::vector<cv::Vec4i> coordinates;
@@ -64,11 +70,15 @@ std::vector<LineSegment> FindSegments::operator()(cv::Mat input_image, cv::Mat &
         cv::Vec4i l = coordinates[i];
         LineSegment segment(l[0], l[1], l[2], l[3]);
         segments.push_back(segment);
-        // draw segments
-        cv::viz::Color color = colors[i % colors.size()];
-        std::ostringstream label;
-        label << i << " |" << (int)segment.rho << "| " << (int)(segment.theta*180/CV_PI);
-        draw_line(segment, debug_image, color, 3, 10, label.str());
+
+        if (debug_image != nullptr)
+        {
+            // draw segments
+            cv::viz::Color color = colors[i % colors.size()];
+            std::ostringstream label;
+            label << i << " |" << (int)segment.rho << "| " << (int)(segment.theta*180/CV_PI);
+            draw_line(segment, *debug_image, color, 3, 10, label.str());
+        }
     }
     return segments;
 };
@@ -83,7 +93,7 @@ ClusterSegments::ClusterSegments(float rho_threshold, float theta_threshold):
     rho_threshold(rho_threshold), theta_threshold(theta_threshold)
 {};
 
-std::vector<LineSegment> ClusterSegments::operator()(std::vector<LineSegment> segments, cv::Mat &debug_image)
+std::vector<LineSegment> ClusterSegments::operator()(std::vector<LineSegment> segments, cv::Mat *debug_image)
 {
     int num_segments = segments.size();
 
@@ -136,10 +146,14 @@ std::vector<LineSegment> ClusterSegments::operator()(std::vector<LineSegment> se
                 LineSegment segment = segments[i];
                 A.block<2,2>(k, 0) << segment.x1, segment.y1, segment.x2, segment.y2;
                 indices.erase(std::remove(indices.begin(), indices.end(), i), indices.end());
-                cv::viz::Color color = colors[lines.size()-1 % colors.size()];
-                std::ostringstream label;
-                label << i << " |" << (int)segment.rho << "| " << (int)(segment.theta*180/CV_PI);
-                draw_line(segment, debug_image, color, 3, 10, label.str());
+
+                if (debug_image != nullptr)
+                {
+                    cv::viz::Color color = colors[lines.size()-1 % colors.size()];
+                    std::ostringstream label;
+                    label << i << " |" << (int)segment.rho << "| " << (int)(segment.theta*180/CV_PI);
+                    draw_line(segment, *debug_image, color, 3, 10, label.str());
+                }
                 k = k + 2;
             }
         }
@@ -168,7 +182,7 @@ IdentifyLines::IdentifyLines(int distance_threshold):
     distance_threshold(distance_threshold)
 {};
 
-std::vector<LineSegment> IdentifyLines::operator()(std::vector<LineSegment> lines, cv::Mat &debug_image)
+std::vector<LineSegment> IdentifyLines::operator()(std::vector<LineSegment> lines, cv::Mat *debug_image)
 {
     LineSegment *baseline = nullptr;
     LineSegment *serveline = nullptr;
@@ -202,11 +216,14 @@ std::vector<LineSegment> IdentifyLines::operator()(std::vector<LineSegment> line
         }
     }
 
-    draw_line(*serveline, debug_image, colors[0], 3, 10, std::string("serveline"));
-    draw_line(*baseline, debug_image, colors[1], 3, 10, std::string("baseline"));
-    draw_line(*left_sideline, debug_image, colors[2], 3, 10, std::string("left_sideline"));
-    draw_line(*right_sideline, debug_image, colors[3], 3, 10, std::string("right_sideline"));
-    draw_line(*centerline, debug_image, colors[4], 3, 10, std::string("centerline"));
+    if (debug_image != nullptr)
+    {
+        draw_line(*serveline, *debug_image, colors[0], 3, 10, std::string("serveline"));
+        draw_line(*baseline, *debug_image, colors[1], 3, 10, std::string("baseline"));
+        draw_line(*left_sideline, *debug_image, colors[2], 3, 10, std::string("left_sideline"));
+        draw_line(*right_sideline, *debug_image, colors[3], 3, 10, std::string("right_sideline"));
+        draw_line(*centerline, *debug_image, colors[4], 3, 10, std::string("centerline"));
+    }
 
     lines = {*serveline, *baseline, *left_sideline, *right_sideline, *centerline};
     return lines;
@@ -214,12 +231,12 @@ std::vector<LineSegment> IdentifyLines::operator()(std::vector<LineSegment> line
 
 
 
-ComputeHomography::ComputeHomography(std::string court_type, cv::Size image_size):
-    court(Court(court_type)),
+ComputeHomography::ComputeHomography(Court court, cv::Size image_size):
+    court(court),
     image_size(image_size)
 {};
 
-Calib ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat &debug_image)
+Calib ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat *debug_image)
 {
     cv::Point2f A2D = lines[0].intersect_with(lines[2]); // serveline with left_sideline
     cv::Point2f B2D = lines[0].intersect_with(lines[3]); // serveline with right_sideline
@@ -249,32 +266,34 @@ Calib ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat &deb
     cv::calibrateCamera(objectPoints, imagePoints, this->image_size, cameraMatrix, distCoefs, rvec, tvec, flags=flags);
     Calib calib = {cameraMatrix, distCoefs, rvec[0], tvec[0]};
 
-    std::map<std::string, std::vector<cv::Point3f>> lines_table = {
-        {"netline", this->court.netline()},
-        {"baseline", this->court.baseline()},
-        {"serveline", this->court.serveline()},
-        {"centerline", this->court.centerline()},
-        {"left_sideline", this->court.left_sideline()},
-        {"right_sideline", this->court.right_sideline()},
-        {"left_single_sideline", this->court.left_single_sideline()},
-        {"right_single_sideline", this->court.right_single_sideline()},
-    };
-    int i = 0;
-    for (std::map<std::string, std::vector<cv::Point3f>>::iterator it = lines_table.begin(); it != lines_table.end(); it++, i++)
+    if (debug_image != nullptr)
     {
-        draw_line_projected(calib, it->second[0], it->second[1], debug_image, colors[i], 3, 10, it->first);
+        std::map<std::string, std::vector<cv::Point3f>> lines_table = {
+            {"netline", this->court.netline()},
+            {"baseline", this->court.baseline()},
+            {"serveline", this->court.serveline()},
+            {"centerline", this->court.centerline()},
+            {"left_sideline", this->court.left_sideline()},
+            {"right_sideline", this->court.right_sideline()},
+            {"left_single_sideline", this->court.left_single_sideline()},
+            {"right_single_sideline", this->court.right_single_sideline()},
+        };
+        int i = 0;
+        for (std::map<std::string, std::vector<cv::Point3f>>::iterator it = lines_table.begin(); it != lines_table.end(); it++, i++)
+        {
+            draw_line_projected(calib, it->second[0], it->second[1], *debug_image, colors[i], 3, 10, it->first);
+        }
+
+        cv::circle(*debug_image, A2D, 10, cv::Scalar(0, 0, 255), 3);
+        cv::putText(*debug_image, "A", A2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+        cv::circle(*debug_image, B2D, 10, cv::Scalar(0, 0, 255), 3);
+        cv::putText(*debug_image, "B", B2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+        cv::circle(*debug_image, C2D, 10, cv::Scalar(0, 0, 255), 3);
+        cv::putText(*debug_image, "C", C2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+        cv::circle(*debug_image, D2D, 10, cv::Scalar(0, 0, 255), 3);
+        cv::putText(*debug_image, "D", D2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+        cv::circle(*debug_image, E2D, 10, cv::Scalar(0, 0, 255), 3);
+        cv::putText(*debug_image, "E", E2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
     }
-
-    cv::circle(debug_image, A2D, 10, cv::Scalar(0, 0, 255), 3);
-    cv::putText(debug_image, "A", A2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-    cv::circle(debug_image, B2D, 10, cv::Scalar(0, 0, 255), 3);
-    cv::putText(debug_image, "B", B2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-    cv::circle(debug_image, C2D, 10, cv::Scalar(0, 0, 255), 3);
-    cv::putText(debug_image, "C", C2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-    cv::circle(debug_image, D2D, 10, cv::Scalar(0, 0, 255), 3);
-    cv::putText(debug_image, "D", D2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-    cv::circle(debug_image, E2D, 10, cv::Scalar(0, 0, 255), 3);
-    cv::putText(debug_image, "E", E2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
-
     return calib;
 }

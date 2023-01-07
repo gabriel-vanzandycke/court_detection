@@ -6,8 +6,15 @@
 
 class CourtDetector {
     public:
-        CourtDetector(std::string court_type, cv::Size image_size);
+        CourtDetector(Court court, cv::Size image_size, bool debug=false);
         Calib operator()(cv::Mat& input_image);
     private:
         cv::Size image_size;
+        bool debug;
+        Skeletonize skeletonize;
+        RemoveSmallComponents remove_small_components;
+        FindSegments find_segments;
+        ClusterSegments cluster_segments;
+        IdentifyLines identify_lines;
+        ComputeHomography compute_homography;
 };

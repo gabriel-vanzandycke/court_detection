@@ -21,12 +21,14 @@ int main(int argc, char *argv[]){
     }
 
     // Create court detection module
-    CourtDetector courtdetector("ITF", image.size());
+    Court court("ITF");
+    CourtDetector courtdetector(court, image.size(), true);
 
     // Run court detection with current image
     Calib calib = courtdetector(image);
 
-    //cv::imshow("img", output); cv::waitKey();
+    // Traverse lines
+
 
     return 0;
 }
