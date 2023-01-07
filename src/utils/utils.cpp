@@ -1,6 +1,25 @@
 #include <math.h>
 
+#include <opencv2/calib3d.hpp>
+
 #include "utils.hpp"
+
+
+Calib::Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec):
+    cameraMatrix(cameraMatrix), distCoeffs(distCoeffs), rvec(rvec), tvec(tvec)
+{
+    cv::Mat R, RT;
+    cv::Rodrigues(rvec, R);
+    cv::hconcat(R, tvec, RT);
+    this->P = cameraMatrix * RT;
+}
+
+std::vector<cv::Point2f> Calib::project(std::vector<cv::Point3f> points3D)
+{
+    std::vector<cv::Point2f> points2D;
+    cv::projectPoints(points3D, this->rvec, this->tvec, this->cameraMatrix, this->distCoeffs, points2D);
+    return points2D;
+}
 
 
 LineSegment::LineSegment(float x1, float y1, float x2, float y2):
@@ -34,12 +53,13 @@ cv::Point2f LineSegment::intersect_with(LineSegment line)
     return {x, y};
 }
 
+
+/* Find the closest point on a line to a point
+    Line is defined in Hough space by `rho` and `theta`
+    Point is defined by `x` and `y` in carthesian coordinates
+*/
 cv::Point2f closest_point(float rho, float theta, cv::Point2f point)
 {
-    /* Find the closest point on a line to a point
-       Line is defined in Hough space by `rho` and `theta`
-       Point is defined by `x` and `y` in carthesian coordinates
-    */
     cv::Point2f b = {rho*cos(theta), rho*sin(theta)};
     cv::Point2f a = {point.x, point.y};
     float alpha = theta - atan2(a.y, a.x); // angle between `a` and `b`
@@ -54,4 +74,13 @@ void draw_line(LineSegment line, cv::Mat &output, cv::viz::Color color, int thic
     cv::circle(output, cv::Point(line.x2, line.y2), markersize, color, -1);
     int x = (line.x1 + line.x2)/2, y = (line.y1 + line.y2)/2;
     cv::putText(output, label, cv::Point(x, y), cv::FONT_HERSHEY_SIMPLEX, 1, color, thickness);
+}
+
+
+void draw_line_projected(Calib calib, cv::Point3f p1, cv::Point3f p2, cv::Mat &output, cv::viz::Color color, int thickness, int markersize, std::string label)
+{
+    std::vector<cv::Point3f> points3D = {p1, p2};
+    std::vector<cv::Point2f> points2D = calib.project(points3D);
+    cv::Point2f p12D = points2D[0], p22D = points2D[1];
+    draw_line(LineSegment(p12D.x, p12D.y, p22D.x, p22D.y), output, color, thickness, markersize, label);
 }

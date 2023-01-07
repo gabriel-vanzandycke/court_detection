@@ -5,7 +5,7 @@
 #include <cstdint>
 
 #include <utils.hpp>
-#include <court_detection.hpp>
+#include <courtdetector.hpp>
 #include <opencv2/opencv.hpp>
 
 int main(int argc, char *argv[]){
@@ -21,10 +21,10 @@ int main(int argc, char *argv[]){
     }
 
     // Create court detection module
-    CourtDetection courtDetection("ITF");
+    CourtDetector courtdetector("ITF", image.size());
 
     // Run court detection with current image
-    cv::Mat output = courtDetection(image);
+    Calib calib = courtdetector(image);
 
     //cv::imshow("img", output); cv::waitKey();
 

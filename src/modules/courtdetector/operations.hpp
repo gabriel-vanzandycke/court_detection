@@ -3,21 +3,17 @@
 #include <utils.hpp>
 #include <court.hpp>
 
-class Operation {
-    public:
-        Operation();
-        virtual void operator()(cv::Mat input_image, cv::Mat &output_image);
-    private:
-};
 
-class Skeletonize {
+class Skeletonize
+{
     public:
         Skeletonize();
         cv::Mat operator()(cv::Mat input_image, cv::Mat &debug_image);
     private:
 };
 
-class RemoveSmallComponents {
+class RemoveSmallComponents
+{
     public:
         RemoveSmallComponents(int max_area);
         cv::Mat operator()(cv::Mat input_image, cv::Mat &debug_image);
@@ -29,7 +25,8 @@ class RemoveSmallComponents {
 // The input image is assumed to be a binary image, and the output image is a debug image
 // that shows the input image with the found segments overlaid.
 // The segments are returned in the segments vector.
-class FindSegments {
+class FindSegments
+{
     public:
         FindSegments(float distance_step, float angle_step, int threshold, int min_line_length, int max_line_gap);
         std::vector<LineSegment> operator()(cv::Mat input_image, cv::Mat &debug_image);
@@ -41,16 +38,18 @@ class FindSegments {
         int max_line_gap;
 };
 
-class SegmentsClusterer {
+class ClusterSegments
+{
     public:
-        SegmentsClusterer(float rho_threshold, float theta_threshold);
+        ClusterSegments(float rho_threshold, float theta_threshold);
         std::vector<LineSegment> operator()(std::vector<LineSegment> segments, cv::Mat &debug_image);
     private:
         float rho_threshold;
         float theta_threshold;
 };
 
-class IdentifyLines {
+class IdentifyLines
+{
     public:
         IdentifyLines(int distance_threshold);
         std::vector<LineSegment> operator()(std::vector<LineSegment> lines, cv::Mat &debug_image);
@@ -58,10 +57,11 @@ class IdentifyLines {
         int distance_threshold;
 };
 
-class ComputeHomography {
+class ComputeHomography
+{
     public:
         ComputeHomography(std::string court_type, cv::Size image_size);
-        cv::Mat operator()(std::vector<LineSegment> lines, cv::Mat &debug_image);
+        Calib operator()(std::vector<LineSegment> lines, cv::Mat &debug_image);
     private:
         Court court;
         cv::Size image_size;

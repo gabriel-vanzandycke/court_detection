@@ -1,26 +1,18 @@
 #include <string>
 #include <iostream>
 #include <opencv2/core/mat.hpp>
-#include <Eigen/Dense>
 
 #include <utils.hpp>
 
-#include "court_detection.hpp"
+#include "courtdetector.hpp"
 
-CourtDetection::CourtDetection(std::string court_type){
-    // build list of operations
-    // build court model
-
-    // this->operations = {
-    //     Skeletonize(),
-    //     RemoveSmallComponents(50),
-    //     FindSegments(1, 1, 10, 100, 100),
-    //     Blur(5)
-    // };
+CourtDetector::CourtDetector(std::string court_type, cv::Size image_size) {
+    this->image_size = image_size;
 }
 
 
-cv::Mat CourtDetection::operator()(cv::Mat& input_image) {
+Calib CourtDetector::operator()(cv::Mat& input_image)
+{
     // skeletonize
     cv::Mat output;
     cv::cvtColor(input_image, output, cv::COLOR_GRAY2RGB);
@@ -36,7 +28,7 @@ cv::Mat CourtDetection::operator()(cv::Mat& input_image) {
 
     // Cluster segments
     cv::cvtColor(input_image, output, cv::COLOR_GRAY2RGB);
-    std::vector<LineSegment> lines = SegmentsClusterer(50, 5)(segments, output);
+    std::vector<LineSegment> lines = ClusterSegments(50, 5)(segments, output);
 
     // Label lines
     cv::cvtColor(input_image, output, cv::COLOR_GRAY2RGB);
@@ -44,7 +36,9 @@ cv::Mat CourtDetection::operator()(cv::Mat& input_image) {
 
     // Compute homography
     cv::cvtColor(input_image, output, cv::COLOR_GRAY2RGB);
-    cv::Mat homography = ComputeHomography("ITF", input_image.size())(labeled_lines, output);
+    Calib calib = ComputeHomography("ITF", input_image.size())(labeled_lines, output);
 
-    return output;
+    cv::imshow("img", output); cv::waitKey();
+
+    return calib;
 }

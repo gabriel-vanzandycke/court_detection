@@ -11,5 +11,5 @@ find_package(Eigen3 3.3 REQUIRED)
 
 add_subdirectory(src)
 
-add_executable(court_detection.exe main.cpp)
-target_link_libraries(court_detection.exe PRIVATE libcourt_detection libutils ${OpenCV_LIBS})
+add_executable(app.exe main.cpp)
+target_link_libraries(app.exe PRIVATE libcourtdetector libutils ${OpenCV_LIBS})

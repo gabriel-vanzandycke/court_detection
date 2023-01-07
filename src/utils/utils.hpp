@@ -2,12 +2,9 @@
 
 #include <string>
 
-#include <opencv2/ximgproc.hpp>
+#include <opencv2/opencv.hpp>
 #include <opencv2/viz/types.hpp>
-#include <Eigen/Dense>
 
-
-#define PRINT(x)  std::cout << (x) << std::endl << std::endl
 
 const std::vector<cv::viz::Color> colors = {
     cv::viz::Color::cyan(),
@@ -42,7 +39,21 @@ const std::vector<cv::viz::Color> colors = {
     cv::viz::Color::violet(),
 };
 
+class Calib
+{
+    public:
+        Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec);
+        std::vector<cv::Point2f> project(std::vector<cv::Point3f> point3D);
+    private:
+        cv::Mat cameraMatrix;
+        cv::Mat distCoeffs;
+        cv::Mat rvec;
+        cv::Mat tvec;
+        cv::Mat P;
+};
+
 enum LineOrientation { horizontal, vertical };
+
 
 cv::Point2f closest_point(float rho, float theta, cv::Point2f point);
 
@@ -60,3 +71,5 @@ class LineSegment
 };
 
 void draw_line(LineSegment line, cv::Mat &output, cv::viz::Color color, int thickness=2, int markersize=5, std::string label="");
+
+void draw_line_projected(Calib calib, cv::Point3f p1, cv::Point3f p2, cv::Mat &output, cv::viz::Color color, int thickness, int markersize, std::string label);

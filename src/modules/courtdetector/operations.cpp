@@ -1,6 +1,8 @@
 
 #include <iostream>
+#include <Eigen/Dense>
 #include <opencv2/calib3d.hpp>
+#include <opencv2/ximgproc.hpp>
 
 #include <utils.hpp>
 #include <court.hpp>
@@ -77,11 +79,11 @@ std::vector<LineSegment> FindSegments::operator()(cv::Mat input_image, cv::Mat &
  * rho_threshold: in pixels
  * theta_threshold: in degrees
 */
-SegmentsClusterer::SegmentsClusterer(float rho_threshold, float theta_threshold):
+ClusterSegments::ClusterSegments(float rho_threshold, float theta_threshold):
     rho_threshold(rho_threshold), theta_threshold(theta_threshold)
 {};
 
-std::vector<LineSegment> SegmentsClusterer::operator()(std::vector<LineSegment> segments, cv::Mat &debug_image)
+std::vector<LineSegment> ClusterSegments::operator()(std::vector<LineSegment> segments, cv::Mat &debug_image)
 {
     int num_segments = segments.size();
 
@@ -217,32 +219,62 @@ ComputeHomography::ComputeHomography(std::string court_type, cv::Size image_size
     image_size(image_size)
 {};
 
-cv::Mat ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat &debug_image)
+Calib ComputeHomography::operator()(std::vector<LineSegment> lines, cv::Mat &debug_image)
 {
-    LineSegment *serveline = &lines[0];
-    LineSegment *baseline = &lines[1];
-    LineSegment *left_sideline = &lines[2];
-    LineSegment *right_sideline = &lines[3];
-    LineSegment *centerline = &lines[4];
+    cv::Point2f A2D = lines[0].intersect_with(lines[2]); // serveline with left_sideline
+    cv::Point2f B2D = lines[0].intersect_with(lines[3]); // serveline with right_sideline
+    cv::Point2f C2D = lines[1].intersect_with(lines[2]); // baseline with left_sideline
+    cv::Point2f D2D = lines[1].intersect_with(lines[3]); // baseline with right_sideline
+    cv::Point2f E2D = lines[0].intersect_with(lines[4]); // serveline with centerline
+    std::vector<cv::Point2f> image_keypoints = {A2D, B2D, C2D, D2D, E2D};
 
-    // Find intersections
-    cv::Point2f A = serveline->intersect_with(*left_sideline);
-    cv::Point2f B = serveline->intersect_with(*right_sideline);
-    cv::Point2f C = baseline->intersect_with(*left_sideline);
-    cv::Point2f D = baseline->intersect_with(*right_sideline);
-    cv::Point2f E = serveline->intersect_with(*centerline);
-
-    std::vector<cv::Point3f> world_keypoints = this->court.keypoints();
-    std::vector<cv::Point2f> image_keypoints = {A, B, C, D, E};
+    std::vector<cv::Point3f> serveline_3D = this->court.serveline();
+    cv::Point3f A3D = serveline_3D[0];
+    cv::Point3f B3D = serveline_3D[1];
+    std::vector<cv::Point3f> world_keypoints = {
+        {     A3D.x     , A3D.y , 0}, // A
+        {     B3D.x     , B3D.y , 0}, // B
+        {     A3D.x     ,   0   , 0}, // C
+        {     B3D.x     ,   0   , 0}, // D
+        {(A3D.x+B3D.x)/2, A3D.y , 0}, // E
+    };
 
     std::vector<std::vector<cv::Point3f>> objectPoints = {world_keypoints};
     std::vector<std::vector<cv::Point2f>> imagePoints = {image_keypoints};
 
     std::vector<cv::Mat> rvec, tvec;
     cv::Mat distCoefs = cv::Mat::zeros(1, 5, CV_64F);
-    cv::Mat camera_matrix = cv::Mat::eye(3, 3, CV_64F);
+    cv::Mat cameraMatrix = cv::Mat::eye(3, 3, CV_64F);
     int flags = cv::CALIB_FIX_ASPECT_RATIO | cv::CALIB_ZERO_TANGENT_DIST | cv::CALIB_FIX_K1 | cv::CALIB_FIX_K2 | cv::CALIB_FIX_K3;
-    cv::calibrateCamera(objectPoints, imagePoints, this->image_size, camera_matrix, distCoefs, rvec, tvec, flags=flags);
+    cv::calibrateCamera(objectPoints, imagePoints, this->image_size, cameraMatrix, distCoefs, rvec, tvec, flags=flags);
+    Calib calib = {cameraMatrix, distCoefs, rvec[0], tvec[0]};
 
-    return camera_matrix;
+    std::map<std::string, std::vector<cv::Point3f>> lines_table = {
+        {"netline", this->court.netline()},
+        {"baseline", this->court.baseline()},
+        {"serveline", this->court.serveline()},
+        {"centerline", this->court.centerline()},
+        {"left_sideline", this->court.left_sideline()},
+        {"right_sideline", this->court.right_sideline()},
+        {"left_single_sideline", this->court.left_single_sideline()},
+        {"right_single_sideline", this->court.right_single_sideline()},
+    };
+    int i = 0;
+    for (std::map<std::string, std::vector<cv::Point3f>>::iterator it = lines_table.begin(); it != lines_table.end(); it++, i++)
+    {
+        draw_line_projected(calib, it->second[0], it->second[1], debug_image, colors[i], 3, 10, it->first);
+    }
+
+    cv::circle(debug_image, A2D, 10, cv::Scalar(0, 0, 255), 3);
+    cv::putText(debug_image, "A", A2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+    cv::circle(debug_image, B2D, 10, cv::Scalar(0, 0, 255), 3);
+    cv::putText(debug_image, "B", B2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+    cv::circle(debug_image, C2D, 10, cv::Scalar(0, 0, 255), 3);
+    cv::putText(debug_image, "C", C2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+    cv::circle(debug_image, D2D, 10, cv::Scalar(0, 0, 255), 3);
+    cv::putText(debug_image, "D", D2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+    cv::circle(debug_image, E2D, 10, cv::Scalar(0, 0, 255), 3);
+    cv::putText(debug_image, "E", E2D, cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0, 0, 255), 2);
+
+    return calib;
 }
