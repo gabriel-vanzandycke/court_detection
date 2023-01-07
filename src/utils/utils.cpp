@@ -92,7 +92,6 @@ void write_line(std::string name, Calib calib, std::vector<cv::Point3f> line, in
     std::ofstream filestream;
     std::ostringstream filename; filename << name << ".csv";
     filestream.open(filename.str());
-    filestream << name << std::endl;
 
     std::vector<cv::Point3f> points3D(steps);
     std::vector<cv::Point2f> points2D(steps);

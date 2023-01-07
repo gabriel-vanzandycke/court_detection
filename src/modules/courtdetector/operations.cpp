@@ -202,15 +202,15 @@ std::vector<LineSegment> IdentifyLines::operator()(std::vector<LineSegment> line
         }
     }
 
-    LineSegment *left_sideline, *right_sideline, *centerline;
+    LineSegment *left_single_sideline, *right_single_sideline, *centerline;
     for (auto &line : lines)
     {
         if (line.orientation == vertical)
         {
             if (line.distance_to({serveline->x1, serveline->y1}) < this->distance_threshold)
-                left_sideline = &line;
+                left_single_sideline = &line;
             else if (line.distance_to({serveline->x2, serveline->y2}) < this->distance_threshold)
-                right_sideline = &line;
+                right_single_sideline = &line;
             else if (line.distance_to({(serveline->x1 + serveline->x2)/2, (serveline->y1 + serveline->y2)/2}) < distance_threshold)
                 centerline = &line;
         }
@@ -220,12 +220,12 @@ std::vector<LineSegment> IdentifyLines::operator()(std::vector<LineSegment> line
     {
         draw_line(*serveline, *debug_image, colors[0], 3, 10, std::string("serveline"));
         draw_line(*baseline, *debug_image, colors[1], 3, 10, std::string("baseline"));
-        draw_line(*left_sideline, *debug_image, colors[2], 3, 10, std::string("left_sideline"));
-        draw_line(*right_sideline, *debug_image, colors[3], 3, 10, std::string("right_sideline"));
+        draw_line(*left_single_sideline, *debug_image, colors[2], 3, 10, std::string("left_single_sideline"));
+        draw_line(*right_single_sideline, *debug_image, colors[3], 3, 10, std::string("right_single_sideline"));
         draw_line(*centerline, *debug_image, colors[4], 3, 10, std::string("centerline"));
     }
 
-    lines = {*serveline, *baseline, *left_sideline, *right_sideline, *centerline};
+    lines = {*serveline, *baseline, *left_single_sideline, *right_single_sideline, *centerline};
     return lines;
 }
 
