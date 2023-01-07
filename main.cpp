@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <iostream>
 #include <cstddef>
@@ -11,14 +12,44 @@
 int main(int argc, char *argv[]){
     int nImageSizeX = 1392;
     int nImageSizeY = 550;
-    bool debug = true;
+    bool debug = false;
+
+    std::string filename = "../assets/image.raw";
+
+    // Shut GetOpt error messages down (return '?'):
+    opterr = 0;
+
+    // Retrieve options:
+    int opt;
+    while ( (opt = getopt(argc, argv, "vh")) != -1 ) {
+        switch ( opt ) {
+            case 'v':
+                debug = true;
+                break;
+            case 'h':
+                std::cout << "Usage: " << argv[0] << " [-v] [-h]" << std::endl;
+                std::cout << "Options:" << std::endl;
+                std::cout << "  -v: verbose mode (debug)" << std::endl;
+                std::cout << "  -h: print this help" << std::endl;
+                return 0;
+            case '?':
+                std::cerr << "Unknown option: '" << char(optopt) << "'!" << std::endl;
+                break;
+        }
+    }
 
     // Load image data
     cv::Mat image = cv::Mat(nImageSizeY, nImageSizeX, CV_8UC1);
-    FILE *fp = fopen("../assets/image.raw", "rb");
-    if (fp) {
+    FILE *fp = fopen(filename.c_str(), "rb");
+    if (fp)
+    {
         std::fread(image.data, nImageSizeX * nImageSizeY, 1, fp);
         fclose(fp);
+    }
+    else
+    {
+        std::cerr << "Error: could not open '" << filename << "'\n";
+        return 1;
     }
 
     // Create court detection module
