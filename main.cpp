@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            std::cerr << "Warring: no rule type specified. Using default " << rule_type << desc << std::endl;
+            std::cerr << "Warring: no rule type specified. Using default " << rule_type << std::endl;
         }
 
         if (vm.count("steps"))
