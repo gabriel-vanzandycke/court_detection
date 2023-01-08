@@ -34,6 +34,7 @@ visible from the camera viewpoint.
 In addition the program outputs the full **projection matrix** describing the correspondance between image 2D pixel coordinates and 
 court 3D world coordinates described in a right-handed coordinates system centered at the intersection between the closest baseline from the cameras
 and the left sideline, `x` along the court width, `y` along the court length and using meters for the unit of length.
+Computing the calibratino data brings a lot of advantages like knowing the position of occluded lines, or computing 3D trajectories of objets in the scene (see my latest paper [Ball 3D Localization from a single calibrated image](https://ieeexplore.ieee.org/document/9857330))
 
 The `--debug` input flag enables the display of intermediate debugging images.
 
@@ -60,11 +61,22 @@ The calibration enables superimposition of full tennis court lines on the input 
 ![assets/output.png](assets/output.png)
 
 
-## Developement process
+## Developement notes
+
+The code was initially prototyped using Python, although keeping efficiency in mind, for its flexibility and ease of developement. Only few python libraries were used, making translation to C++ easier.
+
+The code necessary for the working solution was then translated into C++.
 
 ### Prototyping
 
-The code was prototyped using python, although keeping efficiency in mind (see `prototyping` folder).
+I followed a pipeline workflow allowing to add, remove or swap individual components easily.
+
+I tested different approaches for edge detection ([`CannyEdgeDetection`](prototyping/src/cv/image_processing.py#L48) and [`LaplacianEdgeDetection`](prototyping/src/cv/image_processing.py#L59)) but they didn't provide good enough accuarcy.
+I then tried a corner detection approach ([`HarrisCornerDetection`](prototyping/src/cv/image_processing.py#L71) combined with [`LinesFromPoints`](prototyping/src/modules/court_detection.py#L168)) but the results were not yet perfect.
+I finally used a Hough Lines detector ([`SegmentsDetection`](prototyping/src/cv/image_processing.py#L97)), refining the detected segments with [`ClusterDetectedSegments`](prototyping/src/modules/court_detection.py#L41), and that produced the best results.
+
+The last part which consists in detecting relevant keypoints and finding the homography was trivial for me as I did it nunmerous times in the past.
+
 To install the python code dependencies, run the following command from the `prototyping` folder:
 ```bash
 pip install -e .
@@ -75,18 +87,10 @@ An example using the provided raw image is given in the `prototype.ipynb` notebo
 jupyter notebook prototype.ipynb
 ```
 
-I initially started by defining a list of operators to extract lines.
-
-I tested different approaches for edge detection ([`CannyEdgeDetection`](src/cv/image_processing.py#L48) and [`LaplacianEdgeDetection`](src/cv/image_processing.py#L59)) but without good enough accuarcy.
-I then tried a corner detection approach ([`HarrisCornerDetection`](src/cv/image_processing.py#L71) combined with [`LinesFromPoints`](src/modules/court_detection.py#L168)) but the results were stlightly off.
-I finally used a Hough Lines detector ([`SegmentsDetection`](src/cv/image_processing.py#L97)), refining the detected segments with [`ClusterDetectedSegments`](src/modules/court_detection.py#L41), and that produced the best results.
-
-The last part which consists in detecting relevant keypoints and finding the homography was trivial for me as I did it nunmerous time in the past.
-Computing the calibratino data brings a lot of advantages like knowing the position of occluded lines, or computing 3D trajectories of objets in the scene (see my latest paper)
 
 ### Final implementation
 
-Once the python version was finished, I addressed the translation to C++.
+Once the python version was finished, I addressed the translation to C++ of the necessary components. The code structure only changed slightly.
 
 I chose to use `CMake` for building because, although I had no previous experience with it, it is considered a more modern and efficient alternative to `GNU autotools`.
 It was also my first experience with `Eigen` as I never had to implement linear algebra operations with C++ before.
