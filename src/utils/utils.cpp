@@ -111,4 +111,6 @@ void write_line(std::string filename, Calib calib, std::vector<cv::Point3f> line
         }
     }
     filestream.close();
+
+    std::cout << filename << " written" << std::endl;
 }

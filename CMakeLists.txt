@@ -8,8 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.3 REQUIRED)
+find_package(Boost 1.40 COMPONENTS program_options REQUIRED)
 
 add_subdirectory(src)
 
 add_executable(app.exe main.cpp)
-target_link_libraries(app.exe PRIVATE libcourtdetector libutils ${OpenCV_LIBS})
+target_link_libraries(app.exe PRIVATE libcourtdetector libutils ${OpenCV_LIBS} Boost::program_options)

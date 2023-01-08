@@ -8,34 +8,80 @@
 #include <utils.hpp>
 #include <courtdetector.hpp>
 #include <opencv2/opencv.hpp>
+#include <boost/program_options.hpp>
 
-int main(int argc, char *argv[]){
+
+int main(int argc, char *argv[])
+{
     int nImageSizeX = 1392;
     int nImageSizeY = 550;
     bool debug = false;
 
     std::string filename = "../assets/image.raw";
 
-    // Shut GetOpt error messages down (return '?'):
-    opterr = 0;
+    try
+    {
+        // Declare the supported options.
+        boost::program_options::options_description desc("Options");
+        desc.add_options()
+            ("help", "produce help message")
+            ("debug", "enable debug mode")
+            ("filename", boost::program_options::value<std::string>(), "Input image filename (REQUIRED): a file containing the raw image bytes.")
+            ("width", boost::program_options::value<int>(), "Input image width (required to decode raw image)")
+            ("height", boost::program_options::value<int>(), "Input image height (required to decode raw image)")
+        ;
 
-    // Retrieve options:
-    int opt;
-    while ( (opt = getopt(argc, argv, "vh")) != -1 ) {
-        switch ( opt ) {
-            case 'v':
-                debug = true;
-                break;
-            case 'h':
-                std::cout << "Usage: " << argv[0] << " [-v] [-h]" << std::endl;
-                std::cout << "Options:" << std::endl;
-                std::cout << "  -v: verbose mode (debug)" << std::endl;
-                std::cout << "  -h: print this help" << std::endl;
-                return 0;
-            case '?':
-                std::cerr << "Unknown option: '" << char(optopt) << "'!" << std::endl;
-                break;
+        boost::program_options::variables_map vm;
+        boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+        boost::program_options::notify(vm);
+
+        if (vm.count("help"))
+        {
+            std::cout << desc << std::endl;
+            return 0;
         }
+        debug = vm.count("debug");
+
+        if (vm.count("filename"))
+        {
+            std::cout << "Reading from " << vm["filename"].as<std::string>() << ".\n";
+            filename = vm["filename"].as<std::string>();
+        }
+        else
+        {
+            std::cerr << "Error: no input filename specified. " << desc << std::endl;
+            return 1;
+        }
+
+        if (vm.count("width"))
+        {
+            std::cout << "Image width is " << vm["width"].as<int>() << ".\n";
+            nImageSizeX = vm["width"].as<int>();
+        }
+        else
+        {
+            std::cerr << "Warning: no image width specified. Using default width of " << nImageSizeX << " pixels" << std::endl;
+        }
+
+        if (vm.count("height"))
+        {
+            std::cout << "Image height is " << vm["height"].as<int>() << ".\n";
+            nImageSizeY = vm["height"].as<int>();
+        }
+        else
+        {
+            std::cerr << "Warning: no image height specified. Using default height of " << nImageSizeY << " pixels" << std::endl;
+        }
+    }
+    catch(std::exception& e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
+    }
+    catch(...)
+    {
+        std::cerr << "Error: unknown exception" << std::endl;
+        return 1;
     }
 
     // Load image data
