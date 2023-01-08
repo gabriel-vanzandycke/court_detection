@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         // Declare the supported options.
         boost::program_options::options_description desc("Options");
         desc.add_options()
-            ("help", "produce help message")
+            ("help,h", "produce help message")
             ("debug", "enable debug mode")
             ("filename", boost::program_options::value<std::string>(), "Input image filename (REQUIRED): a file containing the raw image bytes.")
             ("width", boost::program_options::value<int>(), "Input image width (required to decode raw image)")
