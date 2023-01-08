@@ -38,7 +38,7 @@ and the left sideline, `x` along the court width, `y` along the court length and
 The `--debug` input flag enables the display of intermediate debugging images.
 
 
-## Implementation
+## Integration
 
 The `courtdetector` located in `modules` is meant to belong to a large computer vision pipeline
 in which modules process multiple consecutive images and deliver their result downstream.
