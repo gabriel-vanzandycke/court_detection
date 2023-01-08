@@ -1,0 +1,7 @@
+# Python related
+__pycache__
+*.ipynb
+*.egg-info
+
+# IDE related
+.vscode
