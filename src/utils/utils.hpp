@@ -55,12 +55,12 @@ class Calib
         Calib(cv::Mat cameraMatrix, cv::Mat distCoeffs, cv::Mat rvec, cv::Mat tvec, cv::Size image_size);
         std::vector<cv::Point2f> project(std::vector<cv::Point3f> point3D);
         cv::Size image_size;
+        cv::Mat P;
     private:
         cv::Mat cameraMatrix;
         cv::Mat distCoeffs;
         cv::Mat rvec;
         cv::Mat tvec;
-        cv::Mat P;
 };
 
 enum LineOrientation { horizontal, vertical };

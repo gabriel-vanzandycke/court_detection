@@ -16,8 +16,9 @@ int main(int argc, char *argv[])
     int nImageSizeX = 1392;
     int nImageSizeY = 550;
     bool debug = false;
-
-    std::string filename = "../assets/image.raw";
+    std::string filename;
+    std::string rule_type = "ITF";
+    int steps = 10;
 
     try
     {
@@ -29,6 +30,8 @@ int main(int argc, char *argv[])
             ("filename", boost::program_options::value<std::string>(), "Input image filename (REQUIRED): a file containing the raw image bytes.")
             ("width", boost::program_options::value<int>(), "Input image width (required to decode raw image)")
             ("height", boost::program_options::value<int>(), "Input image height (required to decode raw image)")
+            ("rule-type", boost::program_options::value<std::string>(), "Rule type describing the tennis court (REQUIRED): currently only 'ITF' is supported.")
+            ("steps", boost::program_options::value<int>(), "Number of steps to use when discretizing the tennis court (default: 10).")
         ;
 
         boost::program_options::variables_map vm;
@@ -72,6 +75,27 @@ int main(int argc, char *argv[])
         {
             std::cerr << "Warning: no image height specified. Using default height of " << nImageSizeY << " pixels" << std::endl;
         }
+
+        if (vm.count("rule-type"))
+        {
+            std::cout << "Rule type is " << vm["rule-type"].as<std::string>() << ".\n";
+            rule_type = vm["rule-type"].as<std::string>();
+        }
+        else
+        {
+            std::cerr << "Warring: no rule type specified. Using default " << rule_type << desc << std::endl;
+        }
+
+        if (vm.count("steps"))
+        {
+            std::cout << "Number of steps is " << vm["steps"].as<int>() << ".\n";
+            steps = vm["steps"].as<int>();
+        }
+        else
+        {
+            std::cerr << "Warning: no number of steps specified. Using default " << steps << std::endl;
+        }
+
     }
     catch(std::exception& e)
     {
@@ -99,7 +123,7 @@ int main(int argc, char *argv[])
     }
 
     // Create court detection module
-    Court court("ITF");
+    Court court(rule_type);
     CourtDetector courtdetector(court, image.size(), debug);
 
     // Run court detection with current image
@@ -109,7 +133,6 @@ int main(int argc, char *argv[])
     cv::Mat canvas;
     cv::Mat *canvas_ptr = debug ? &canvas : nullptr;
     if (debug) {cv::cvtColor(image, canvas, cv::COLOR_GRAY2RGB);}
-    int steps = 10;
     write_line("netline.csv", calib, court.netline(), steps, &canvas);
     write_line("baseline.csv", calib, court.baseline(), steps, &canvas);
     write_line("serveline.csv", calib, court.serveline(), steps, &canvas);
@@ -119,6 +142,9 @@ int main(int argc, char *argv[])
     write_line("left_single_sideline.csv", calib, court.left_single_sideline(), steps, &canvas);
     write_line("right_single_sideline.csv", calib, court.right_single_sideline(), steps, &canvas);
     if (debug) {cv::imshow("lines sampled", canvas); cv::waitKey(0);}
+
+    std::cout << "Image projection matrix P:" << std::endl;
+    std::cout << calib.P << std::endl;
 
     return 0;
 }
