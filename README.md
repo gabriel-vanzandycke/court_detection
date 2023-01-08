@@ -34,6 +34,7 @@ visible from the camera viewpoint.
 In addition the program outputs the full **projection matrix** describing the correspondance between image 2D pixel coordinates and 
 court 3D world coordinates described in a right-handed coordinates system centered at the intersection between the closest baseline from the cameras
 and the left sideline, `x` along the court width, `y` along the court length and using meters for the unit of length.
+
 Computing the calibratino data brings a lot of advantages like knowing the position of occluded lines, or computing 3D trajectories of objets in the scene (see my latest paper [Ball 3D Localization from a single calibrated image](https://ieeexplore.ieee.org/document/9857330))
 
 The `--debug` input flag enables the display of intermediate debugging images.
