@@ -4,7 +4,7 @@ setup(
     name='court_detection',
     author='Gabriel Van Zandycke',
     author_email="gabriel.vanzandycke@hotmail.com",
-    url="https://github.com/gabriel-vanzandycke/hawkeye_assignment",
+    url="https://github.com/gabriel-vanzandycke/court_detection",
     licence="LGPL",
     python_requires='>=3.8',
     description="Assignment for Hawk-Eye interview",
