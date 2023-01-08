@@ -18,7 +18,7 @@ The program has the following dependencies:
 
 To build the program, run the following:
 ```bash
-mkdir -p build ; cd build ; cmake ..
+mkdir -p build ; cd build ; cmake .. ; make
 ```
 
 
@@ -26,7 +26,7 @@ mkdir -p build ; cd build ; cmake ..
 
 Execute with `--help` to see program usage:
 ```bash
-./app.exe --help
+./build/app.exe --help
 ```
 
 The program creates 8 `.csv` files containing `x` and `y` pixel positions along 8 [tennis court lines](https://en.wikipedia.org/wiki/Tennis_court)
