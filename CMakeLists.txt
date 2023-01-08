@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25.1)
-project(court_detection VERSION 0.0.1)
+project(court_detection VERSION 0.2.0)
 set(CMAKE_BUILD_TYPE Debug)
 
 # specify the C++ standard
