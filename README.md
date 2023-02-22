@@ -1,8 +1,8 @@
-# Hawk-Eye Assigment - a Tennis court lines detector
+# Tennis court lines detector
 
 ![assets/input.png](assets/input.png)
 
-Provided with a raw image capturing a baseline view of a tennis court, the candidate should
+Provided with a raw image capturing a baseline view of a tennis court, the goal is to
 - extract the tennis court lines,
 - categorise them given known tennis court dimensions
 - and traverse each of them.
