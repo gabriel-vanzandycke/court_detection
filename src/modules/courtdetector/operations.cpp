@@ -19,7 +19,7 @@ cv::Mat Skeletonize::operator()(cv::Mat input_image, cv::Mat *debug_image)
     cv::ximgproc::thinning(input_image, output_image);
     if (debug_image != nullptr)
     {
-        (*debug_image).setTo(cv::Scalar(255,0,0), output_image);
+        (*debug_image).setTo(cv::Scalar(0,255,0), output_image);
     }
     return output_image;
 };
@@ -45,7 +45,7 @@ cv::Mat RemoveSmallComponents::operator()(cv::Mat input_image, cv::Mat *debug_im
     }
     if (debug_image != nullptr)
     {
-        (*debug_image).setTo(cv::Scalar(255,0,0), input_image);
+        (*debug_image).setTo(cv::Scalar(0,255,0), input_image);
     }
     return input_image;
 };
